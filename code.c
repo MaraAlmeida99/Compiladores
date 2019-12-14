@@ -11,6 +11,7 @@ Atom* atom_String(char* c){
 	Atom* node = (Atom*)malloc(sizeof(Atom));
 	node->kind = A_STRING;
 	node->elem.name = c;
+
 	return node;
 }
 
@@ -184,17 +185,16 @@ LIST* nextInstrs(LIST* l){
 }
 
 LIST* append(LIST* l1, LIST* l2){
-	LIST* p= l1;
 
 	if(l1==NULL) return l2;
 
 	else
-		while(l1->next == NULL)
-			l1==l1->next;
+		while(l1->next != NULL)
+			l1=l1->next;
 		l1->next=l2;
 			
 
-			return p;
+			return l1;
 }
  
 LIST* mkInstrList(Instr* i, LIST* l){                        //criar lista
@@ -352,15 +352,13 @@ void printInstr(Instr* instr){
 
  	if(l==NULL) printf("Lista Vazia");
 
-	else{
-		while(l->next!=NULL){
-			printInstr(l->instr);
-			l=l->next;
-		}
-
+	while(l!=NULL){
 		printInstr(l->instr);
+		if(l->next==NULL) break;
+		l=l->next;
 	}
  }
+
 
 LIST* compileCmdList(CommandList* l){    //passar a lista do trab1 para uma lista de instruçoes
 	if(l == NULL) return NULL;
@@ -371,10 +369,28 @@ LIST* compileCmdList(CommandList* l){    //passar a lista do trab1 para uma list
 	}
 }
 
+
+/*LIST* compileCmdList(CommandList* root){    //passar a lista do trab1 para uma lista de instruçoes
+	if(root == NULL) return NULL;
+	LIST* l3 = (LIST*) malloc(sizeof(LIST));
+	while(root->cmd!=NULL){
+		LIST* l1 = compileCmd(root->cmd);
+		if(root->next==NULL) {
+			return l1;
+			l3 = append(l1,NULL);
+			break;
+		}
+		LIST* l2 = compileCmdList(root->next);
+		l3 = append(l1,l2);
+		root = root->next;
+	}
+	return l3;
+}*/
+
 char* newLabel(){
-	char* name ="label";
- 	sprintf(name, "%d",label);
- 	label++;
+	char* name = (char*)malloc(sizeof(char));
+ 	sprintf(name, "label%d",label);
+ 	label += 1;
  	return name;
 }
 
@@ -403,7 +419,7 @@ LIST* compileCmd(Cmd* command){
 		case LET:
 			reg = newVar();
 			l = mkInstrList(instr_atrib(atom_String(command->attr.let.var), atom_String(reg)), NULL);
-			l = append(compileExpr(command->attr.let.value, reg), l);
+			l = append(l,compileExpr(command->attr.let.value, reg));
 			return l;
 
 		case WHILE:
@@ -469,12 +485,14 @@ LIST* compileCmd(Cmd* command){
 	}
 }
 
-char* newVar(){
- 	char* name ="t";
- 	sprintf(name, "%d",registo);
+
+ char* newVar(){
+ 	char* name = (char*)malloc(sizeof(char));
+ 	sprintf(name, "t%d",registo);
  	registo++;
  	return name;
- }
+}
+
 
 LIST* compileExpr(Expr* e, char* r){
 
@@ -594,22 +612,5 @@ LIST* compileBool(BoolExpr* e, char *labelTrue, char *labelFalse){
 	}   
 }
 
-int main(int argc, char** argv) {
-  --argc; ++argv;
-  if (argc != 0) {
-    yyin = fopen(*argv, "r");
-    if (!yyin) {
-      printf("'%s': could not open file\n", *argv);
-      return 1;
-    }
-  } //yyin = stdin
-
-  if (yyparse() == 0) {
-    //printf("Result = %d\n", evalExpr(root,0));
-    //evalCmdList(root,0);
-    printListIntrs(compileCmdList(root));
-  }
-  return 0;
-}
 
 

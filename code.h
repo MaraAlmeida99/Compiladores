@@ -7,16 +7,15 @@ typedef enum {I_LABEL, I_GOTO, I_ATRIB, I_PLUS, I_MINUS, I_MULT, I_DIV, I_IFG, I
 typedef enum {A_STRING, A_INT, A_EMPTY} AtomKind;
 
 typedef struct{
-		AtomKind kind;
 		union{
 			int value;
 			char *name;
-		     }elem;                                                     
+		  }                                                    
 		}Atom;
 
 typedef struct{
   I_Kind ikind;
-  union{
+  union{ 
     struct{
       int operator;   
       Atom* a1;
